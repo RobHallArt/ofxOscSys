@@ -53,21 +53,44 @@ void ofApp::update(){
 		}
 
 		if (m.getAddress() == "/down" && m.getArgAsInt(0) != localPlayer.ID) {
+			bool exists = false;
 			for (int i = 0; i < players.size(); i++) {
-				string addr = "/up/" + players[i].ID;
-				if (m.getAddress() == addr) { // << THIS MIGHT NOT WORK
+				
+				if (m.getArgAsInt(0) == players[i].ID) { // << THIS MIGHT NOT WORK
 					players[i].update(
-						m.getArgAsString(0),
-						m.getArgAsFloat(1),
+						ofVec3f(
 						m.getArgAsFloat(2),
 						m.getArgAsFloat(3),
-						m.getArgAsFloat(4),
+						m.getArgAsFloat(4)),
+						ofVec3f(
 						m.getArgAsFloat(5),
 						m.getArgAsFloat(6),
-						m.getArgAsBool(7),
-						m.getArgAsInt(8)
+						m.getArgAsFloat(7)),
+						m.getArgAsInt(9),
+						m.getArgAsString(1)
 					);
+
+					exists = true;
 				}
+				
+			}
+			if (!exists) {
+				players.push_back(
+					player(
+						ofVec3f(
+							m.getArgAsFloat(2),
+							m.getArgAsFloat(3),
+							m.getArgAsFloat(4)),
+						ofVec3f(
+							m.getArgAsFloat(5),
+							m.getArgAsFloat(6),
+							m.getArgAsFloat(7)),
+						m.getArgAsString(1),
+						m.getArgAsInt(9),
+						false,
+						m.getArgAsInt(0)
+					)
+				);
 			}
 		}
 

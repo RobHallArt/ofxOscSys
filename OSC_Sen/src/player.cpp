@@ -8,10 +8,11 @@ player::player(ofVec3f _loc, bool _local, string _playerName) {
 	playerName = _playerName;
 }
 
-player::player(ofVec3f _loc, ofVec3f _size, string _playerName, bool _local, int _ID) {
+player::player(ofVec3f _loc, ofVec3f _size, string _playerName, int _hue, bool _local, int _ID) {
 	loc = _loc;
 	size = _size;
 	playerName = _playerName;
+	playerColor.setHsb(_hue, 255, 255);
 	local = _local;
 	ID = _ID;
 }
@@ -34,6 +35,13 @@ void player::update(ofVec3f _vel) {
 		loc = _vel;
 	}
 }
+
+void player::update(ofVec3f _loc, ofVec3f _size, int _hue, string _playerName) {
+	loc = _loc;
+	size = _size;
+	playerColor.setHsb(_hue, 255, 255);
+	playerName = _playerName;
+} 
 
 void player::draw() {
 	ofSetColor(playerColor);
