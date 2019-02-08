@@ -8,7 +8,8 @@
 #define HOST "localhost"
 
 // send port
-#define PORT 12345
+#define RECPORT 12345
+#define SENPORT 12346
 
 
 class ofApp : public ofBaseApp{

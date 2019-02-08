@@ -7,9 +7,12 @@ void ofApp::setup(){
 	ofSetVerticalSync(true);
 
 	// listen on the given port
-	std::cout << "LISTENING : " << PORT << std::endl;
-	receiver.setup(PORT);
-	sender.setup(HOST,PORT);
+	std::cout << "LISTENING : " << RECPORT << std::endl;
+	receiver.setup(RECPORT);
+	senset.broadcast = true;
+	senset.host = HOST;
+	senset.port = SENPORT;
+	sender.setup(senset);
 }
 
 //--------------------------------------------------------------
@@ -19,9 +22,13 @@ void ofApp::update(){
 		receiver.getNextMessage(m);
 
 		if (m.getAddress() == "/up/new") {
+
+			
+			
+
 			clients.push_back(
 				client(		m.getArgAsString(0),
-							totalConns++, //SET ID HERE
+							ofGetFrameNum(), //SET ID HERE
 							m.getArgAsFloat(1),
 							m.getArgAsFloat(2),
 							m.getArgAsFloat(3),
@@ -42,8 +49,10 @@ void ofApp::update(){
 
 		//check through IDs to see if any match the most recent message and if they do update the vector with the details
 		for (int i = 0; i < clients.size(); i++) {
-			string addr = "/up/" + clients[i].ID;
-			if (m.getAddress() == addr) { // << THIS MIGHT NOT WORK
+			string addr = "/up/" + ofToString(clients[i].ID);
+			std::cout << m.getAddress()+ofToString(m.getArgAsInt(9)) << " : " << addr << std::endl;
+			
+			if (m.getAddress() + ofToString(m.getArgAsInt(9)) == addr) { // THIS IS RIGHT WHEN IT SHOULDNT BE RIGHT!!!
 				clients[i].update(	m.getArgAsString(0),
 									m.getArgAsFloat(1),
 									m.getArgAsFloat(2),
@@ -54,6 +63,7 @@ void ofApp::update(){
 									m.getArgAsBool(7),
 									m.getArgAsInt(8)
 				);
+				std::cout << "yay" << std::endl;
 			}
 		}
 
@@ -86,10 +96,12 @@ void ofApp::update(){
 			}
 			//std::cout << msgString << std::endl;
 		}
+		
 	}
 
-	ofxOscMessage ret;
+	//ofxOscMessage ret;
 	for (int i = 0; i < clients.size(); i++) {
+		ofxOscMessage ret;
 		string addr = "/down";
 		ret.setAddress(addr);
 		ret.addIntArg(clients[i].ID);
@@ -102,20 +114,28 @@ void ofApp::update(){
 		ret.addFloatArg(clients[i].sizez);
 		ret.addBoolArg(clients[i].connected);
 		ret.addIntArg(clients[i].hue);
+		sender.sendMessage(ret, false);
 	}
-
+	//sender.sendMessage(ret, false);
+	std::cout << clients.size() << std::endl;
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
 	for (int i = 0; i < clients.size(); i++) {
+		std::cout << "draw" << i << std::endl;
 		ofSetColor(ofColor::fromHsb(clients[i].hue,255,255));
+
 		ofDrawEllipse(	ofMap(clients[i].posx, 0, 1, 0, ofGetWidth()),
 						ofMap(clients[i].posy, 0, 1, 0, ofGetHeight()),
 						ofMap(clients[i].sizex, 0, 1, 0, ofGetWidth()),
 						ofMap(clients[i].sizey, 0, 1, 0, ofGetHeight())
 		);
-		ofDrawBitmapString(clients[i].name, ofMap(clients[i].posx, 0, 1, 0, ofGetWidth()) + ofMap(clients[i].sizex, 0, 1, 0, ofGetWidth()) + 20, ofMap(clients[i].posy, 0, 1, 0, ofGetHeight()));
+
+		ofDrawBitmapString(clients[i].name,
+				ofMap(clients[i].posx, 0, 1, 0,
+				ofGetWidth()) + ofMap(clients[i].sizex, 0, 1, 0, ofGetWidth()) + 20,
+			ofMap(clients[i].posy, 0, 1, 0, ofGetHeight()));
 		
 	}
 }

@@ -46,7 +46,9 @@ void player::update(ofVec3f _loc, ofVec3f _size, int _hue, string _playerName) {
 void player::draw() {
 	ofSetColor(playerColor);
 	ofDrawRectangle(loc, size.x, size.y);
+	ofPushMatrix();
 	ofTranslate(loc);
 	ofTranslate(size.x + 20, 0, 0);
 	ofDrawBitmapString(playerName, 0, 0);
+	ofPopMatrix();
 }

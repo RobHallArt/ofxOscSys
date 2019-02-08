@@ -7,13 +7,13 @@ void ofApp::setup(){
 	ofSetVerticalSync(true);
 
 	// listen on the given port
-	std::cout << "LISTENING : " << PORT << std::endl;
-	receiver.setup(PORT);
-	sender.setup(HOST, PORT);
+	std::cout << "LISTENING : " << RECPORT << std::endl;
+	receiver.setup(RECPORT);
+	sender.setup(HOST, SENPORT);
 
 	ofxOscMessage init;
 	init.setAddress("/up/new");
-	init.addStringArg("PlayerOne");
+	init.addStringArg(localPlayer.playerName);
 	init.addFloatArg(ofMap(localPlayer.loc.x, 0, ofGetWidth(), 0, 1));
 	init.addFloatArg(ofMap(localPlayer.loc.y, 0, ofGetHeight(), 0, 1));
 	init.addFloatArg(ofMap(localPlayer.loc.z, 0, 100, 0, 1));
@@ -31,7 +31,7 @@ void ofApp::update(){
 	ofxOscMessage upd;
 	string addr = "/up/" + localPlayer.ID;
 	upd.setAddress(addr);
-	upd.addStringArg("PlayerOne");
+	upd.addStringArg(localPlayer.playerName);
 	upd.addFloatArg(ofMap(localPlayer.loc.x, 0, ofGetWidth(), 0, 1));
 	upd.addFloatArg(ofMap(localPlayer.loc.y, 0, ofGetHeight(), 0, 1));
 	upd.addFloatArg(ofMap(localPlayer.loc.z, 0, 100, 0, 1));
@@ -40,19 +40,22 @@ void ofApp::update(){
 	upd.addFloatArg(ofMap(localPlayer.size.z, 0, 100, 0, 1));
 	upd.addBoolArg(true);
 	upd.addIntArg(localPlayer.playerColor.getHue());
+	upd.addIntArg(localPlayer.ID);
 	sender.sendMessage(upd, false);
 
 	while (receiver.hasWaitingMessages()) {
 		ofxOscMessage m;
 		receiver.getNextMessage(m);
-
+		//std::cout << m.getAddress() << " : " << m.getArgAsInt(0) << std::endl;
 
 		if (m.getAddress() == "/down/new" && !initiated) {
 			initiated = true;
 			localPlayer.ID = m.getArgAsInt(0);
 		}
 
+		//std::cout << m.getAddress() << " : " << m.getArgAsInt(0) << std::endl;
 		if (m.getAddress() == "/down" && m.getArgAsInt(0) != localPlayer.ID) {
+			
 			bool exists = false;
 			for (int i = 0; i < players.size(); i++) {
 				
@@ -93,41 +96,50 @@ void ofApp::update(){
 				);
 			}
 		}
+		
 
-		// for every MSG, eventually only unrecognised messages
-		string msgString;
-		msgString = m.getAddress();
-		msgString += ":";
-		for (size_t i = 0; i < m.getNumArgs(); i++) {
-
-			// get the argument type
-			msgString += " ";
-			msgString += m.getArgTypeName(i);
+			// for every MSG, eventually only unrecognised messages
+			string msgString;
+			msgString = m.getAddress();
 			msgString += ":";
+			for (size_t i = 0; i < m.getNumArgs(); i++) {
 
-			// display the argument - make sure we get the right type
-			if (m.getArgType(i) == OFXOSC_TYPE_INT32) {
-				msgString += ofToString(m.getArgAsInt32(i));
+				// get the argument type
+				msgString += " ";
+				msgString += m.getArgTypeName(i);
+				msgString += ":";
+
+				// display the argument - make sure we get the right type
+				if (m.getArgType(i) == OFXOSC_TYPE_INT32) {
+					msgString += ofToString(m.getArgAsInt32(i));
+				}
+				else if (m.getArgType(i) == OFXOSC_TYPE_FLOAT) {
+					msgString += ofToString(m.getArgAsFloat(i));
+				}
+				else if (m.getArgType(i) == OFXOSC_TYPE_STRING) {
+					msgString += m.getArgAsString(i);
+				}
+				else {
+					msgString += "unhandled argument type " + m.getArgTypeName(i);
+				}
+				std::cout << msgString << std::endl;
 			}
-			else if (m.getArgType(i) == OFXOSC_TYPE_FLOAT) {
-				msgString += ofToString(m.getArgAsFloat(i));
-			}
-			else if (m.getArgType(i) == OFXOSC_TYPE_STRING) {
-				msgString += m.getArgAsString(i);
-			}
-			else {
-				msgString += "unhandled argument type " + m.getArgTypeName(i);
-			}
-			std::cout << msgString << std::endl;
-		}
+		
 	}
 	
 	localPlayer.update();
+	//std::cout << players.size() << std::endl;
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
 	localPlayer.draw();
+
+	for (int i = 0; i < players.size(); i++) {
+		players[i].draw();
+	}
+
+	ofDrawBitmapString(localPlayer.ID,100,100);
 }
 
 //--------------------------------------------------------------

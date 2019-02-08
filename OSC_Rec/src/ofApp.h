@@ -5,7 +5,8 @@
 #include "client.h"
 
 // listening port
-#define PORT 12345
+#define SENPORT 12345
+#define RECPORT 12346
 
 // send host (aka ip address)
 #define HOST "localhost"
@@ -28,8 +29,10 @@ class ofApp : public ofBaseApp{
 		void windowResized(int w, int h);
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
-		int totalConns;
+		int totalConns = 100;
 		
+		ofxOscSenderSettings senset;
+
 		ofxOscReceiver receiver;
 		ofxOscSender sender;
 		vector<client> clients;
